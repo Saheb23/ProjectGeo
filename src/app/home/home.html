@@ -57,7 +57,7 @@
     border-bottom: 1px solid #efefef !important;
 ">
     <div class="row bg-white">
-        <div class="col-md-3" >
+        <div class="col-md-3">
             <div class="row">
                 <div class="col-2 p-1 py-2 border border-gray-200 d-flex justify-content-center align-items-center custom-border"
                     style="border-top-left-radius: 5px;border-bottom-left-radius: 5px;">
@@ -115,13 +115,144 @@
 <div class="container-fluid py-0 px-0">
     <div class="container-fluid">
         <div class="row p-0">
-            <div class="col-md-4">
+            <div class="col-md-4 px-3 py-2 bg-light">
+                <div *ngIf="!selectedProject">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="text-uppercase text-muted mb-0">Active Projects</h6>
+                        <span class="badge bg-dark-subtle text-dark-emphasis">{{ filteredProjects.length }}</span>
+                    </div>
+                    <div class="input-group input-group-sm mb-3 search-control">
+                        <span class="input-group-text border-0 bg-body-secondary text-muted">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="search" class="form-control border-0"
+                            placeholder="Search projects, addresses, contacts..." [(ngModel)]="searchTerm" />
+                    </div>
+                </div>
+                <div class="project-sidebar d-flex flex-column" [class.project-sidebar-hight-adjust]="selectedProject">
+                    <div *ngIf="!selectedProject; else projectDetails" class="d-flex flex-column flex-grow-1">
 
+
+                        <div class="project-list-scroll flex-grow-1">
+                            <ng-container *ngIf="filteredProjects.length; else noMatches">
+                                <div class="card shadow-sm border-0 project-card mb-2" role="button" tabindex="0"
+                                    (click)="selectProject(project)" *ngFor="let project of filteredProjects">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h5 class="card-title mb-1 text-dark">{{ project.name }}</h5>
+                                                <p class="text-muted mb-2">
+                                                    <i class="fa-regular fa-calendar me-2"></i>{{ project.startDate }}
+                                                </p>
+                                            </div>
+                                            <span class="badge bg-primary-subtle text-primary-emphasis">
+                                                {{ project.budget }}
+                                            </span>
+                                        </div>
+                                        <p class="small mb-2 text-body-secondary">
+                                            <i class="fa-solid fa-location-dot me-2 text-primary"></i>{{ project.address
+                                            }}
+                                        </p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span class="fw-semibold text-secondary">
+                                                <i class="fa-solid fa-phone me-2 text-success"></i>{{
+                                                project.contactPhone }}
+                                            </span>
+                                            <span class="small text-muted">View details</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-template #noMatches>
+                                <div class="alert alert-light border text-muted mb-0">
+                                    No projects match “{{ searchTerm }}”.
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                    <ng-template #projectDetails>
+                        <div class="card shadow-sm border-0 flex-grow-1 d-flex flex-column project-detail-card">
+                            <div class="card-header bg-body d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h5 class="mb-0">{{ selectedProject?.name }}</h5>
+                                    <small class="text-muted">Project detail overview</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
+                                    <i class="fa-solid fa-arrow-left-long me-1"></i>
+                                    Back
+                                </button>
+                            </div>
+                            <div class="card-body overflow-auto">
+                                <div class="detail-meta mb-3 d-flex flex-wrap align-items-center gap-2">
+                                    <span class="badge bg-primary-subtle text-primary-emphasis px-3 py-2">
+                                        <i class="fa-solid fa-wallet me-2"></i>{{ selectedProject?.budget }}
+                                    </span>
+                                    <span class="detail-pill text-muted">
+                                        <i class="fa-regular fa-calendar me-2"></i>{{ selectedProject?.startDate }}
+                                    </span>
+                                </div>
+                                <ul class="list-unstyled mb-3 detail-list">
+                                    <li>
+                                        <i class="fa-solid fa-location-dot me-2 text-danger"></i>
+                                        <span class="label">Address:</span>
+                                        {{ selectedProject?.address }}
+                                    </li>
+                                    <li>
+                                        <i class="fa-solid fa-phone me-2 text-success"></i>
+                                        <span class="label">Site contact:</span>
+                                        {{ selectedProject?.contactPhone }}
+                                    </li>
+                                </ul>
+                                <p class="detail-description mb-4">{{ selectedProject?.description }}</p>
+
+                                <ng-container *ngIf="selectedProject?.siteImages?.length; else noImages">
+                                    <div class="project-gallery mb-4">
+                                        <div class="ratio ratio-16x9 project-gallery-main mb-3">
+                                            <img [src]="selectedProject?.siteImages?.[activeImageIndex]"
+                                                class="w-100 h-100 rounded object-fit-cover" alt="Project site overview" />
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <button type="button" class="project-gallery-thumb"
+                                                *ngFor="let image of selectedProject?.siteImages; let idx = index"
+                                                (click)="setActiveImage(idx)" [class.active]="idx === activeImageIndex">
+                                                <img [src]="image" alt="Project view thumbnail"
+                                                    class="w-100 h-100 object-fit-cover rounded" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-template #noImages>
+                                    <div class="alert alert-light border text-muted mb-4">
+                                        No site imagery uploaded yet.
+                                    </div>
+                                </ng-template>
+
+                                <div class="detail-documents">
+                                    <h6 class="text-uppercase text-muted small mb-2">Documents</h6>
+                                    <div class="d-flex flex-column gap-2"
+                                        *ngIf="selectedProject?.documents?.length; else noDocs">
+                                        <button type="button" *ngFor="let document of selectedProject?.documents"
+                                            class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-between">
+                                            <span class="text-start">{{ document.label }}</span>
+                                            <i class="fa-solid fa-download ms-2"></i>
+                                        </button>
+                                    </div>
+                                    <ng-template #noDocs>
+                                        <div class="alert alert-light border text-muted mb-0">
+                                            No documents available yet.
+                                        </div>
+                                    </ng-template>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </div>
             </div>
             <div class="col-md-8 p-0">
-               
+
                 <div style="position: relative;">
-                    <div class="d-flex gap-2 justify-content-center align-items-center" style="position: absolute; top: 10px; left: 0; right: 0;z-index: 99999;">
+                    <div class="d-flex gap-2 justify-content-center align-items-center"
+                        style="position: absolute; top: 10px; left: 0; right: 0;z-index: 99999;">
                         <button class="btn btn-sm btn-light position-relative">
                             <i class="fa-solid fa-earth-asia"></i> Satellite View
                         </button>
@@ -140,7 +271,7 @@
                     </div>
                     <app-map></app-map>
                 </div>
-                
+
             </div>
         </div>
     </div>

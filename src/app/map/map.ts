@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy, ViewEncapsulation, NgZone } from '@angular/core';
+import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy, ViewEncapsulation, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { MapSelectionService } from '../map-selection.service';
@@ -29,6 +29,38 @@ import { Subscription } from 'rxjs';
       <div style="margin: 8px 0; font-size: 13px;">
         <strong style="color: #333; display: inline-block; width: 90px;">Selected Mouza:</strong> 
         <span id="selectedMouza" style="color: #dc3545; font-weight: bold;">{{ selectedMouza || 'None' }}</span>
+      </div>
+    </div>
+    <!-- Location Details Panel -->
+    <div *ngIf="showLocationDetails && selectedLocation" 
+         #locationDetailsPanel
+         class="location-details-panel"
+         [style.left.px]="panelPosition.x"
+         [style.top.px]="panelPosition.y"
+         [style.transform]="'none'">
+      <div class="panel-drag-handle" 
+           (mousedown)="startDrag($event)"
+           (touchstart)="startDrag($event)">
+        <button class="close-location-details" 
+                title="Close" 
+                (click)="hideLocationDetailsPanel()"
+                (mousedown)="$event.stopPropagation()"
+                (touchstart)="$event.stopPropagation()">×</button>
+        <h4 class="location-title">{{ selectedLocation.name }}</h4>
+      </div>
+      <div class="location-info">
+        <div class="location-type" [style.background-color]="getTypeColor(selectedLocation.type)">
+          <strong>Type:</strong> 
+          <span>{{ getTypeLabel(selectedLocation.type) }}</span>
+        </div>
+        <div class="location-coords">
+          <strong>Coordinates:</strong> 
+          <span>{{ selectedLocation.latitude.toFixed(4) }}, {{ selectedLocation.longitude.toFixed(4) }}</span>
+        </div>
+        <div class="location-description">
+          <strong>Description:</strong>
+          <p>{{ selectedLocation.description }}</p>
+        </div>
       </div>
     </div>
   `,
@@ -115,6 +147,195 @@ import { Subscription } from 'rxjs';
     #closeInfoPanel:hover {
       background: #c82333;
     }
+
+    /* Location Details Panel Styles */
+    .location-details-panel {
+      position: fixed;
+      width: 400px;
+      max-width: 90vw;
+      max-height: 80vh;
+      background: rgba(255, 255, 255, 0.98);
+      border: 3px solid #ff6b35;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 100001;
+      font-family: Arial, sans-serif;
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      animation: slideIn 0.3s ease-out;
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .panel-drag-handle {
+      cursor: move;
+      padding: 20px 20px 15px 20px;
+      border-bottom: 2px solid #ff6b35;
+      background: rgba(255, 107, 53, 0.05);
+      user-select: none;
+      position: relative;
+    }
+
+    .panel-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .location-details-panel .location-info {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .location-details-panel .location-title {
+      margin: 0;
+      color: #ff6b35;
+      font-size: 20px;
+      font-weight: bold;
+      padding-right: 35px;
+    }
+    
+    .location-details-panel .location-info {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .location-details-panel .location-type {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .location-details-panel .location-type strong {
+      color: white;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    
+    .location-details-panel .location-type span {
+      color: white;
+      text-transform: capitalize;
+    }
+    
+    .location-details-panel .location-coords {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #ff6b35;
+    }
+    
+    .location-details-panel .location-coords strong {
+      color: #333;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .location-details-panel .location-coords span {
+      color: #666;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .location-details-panel .location-description strong {
+      color: #333;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .location-details-panel .location-description p {
+      margin: 0;
+      color: #555;
+      text-align: justify;
+      line-height: 1.7;
+    }
+    
+    .location-details-panel .close-location-details {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #ff6b35;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      line-height: 1;
+      z-index: 10;
+    }
+    
+    .location-details-panel .close-location-details:hover {
+      background: #e55a2b;
+      transform: scale(1.1);
+    }
+    
+    .location-details-panel .close-location-details:active {
+      transform: scale(0.95);
+    }
+
+    /* Location marker styles */
+    .location-marker {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .location-marker:hover {
+      transform: scale(1.2);
+    }
+
+    /* Selected marker animation */
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.4);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
+
+    .location-marker .selected-marker {
+      position: relative;
+    }
+
+    .location-marker .selected-marker::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 107, 53, 0.6);
+      animation: pulse-ring 2s infinite;
+      pointer-events: none;
+    }
   `]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
@@ -140,6 +361,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   mouzaCount: number = 0;
   showInfoPanel: boolean = false;
   private isHighlighting: boolean = false;
+  
+  // Location markers state
+  private locationMarkers: any[] = [];
+  private locationMarkerMap: Map<string, any> = new Map(); // Map location name to marker
+  private selectedMarker: any = null;
+  showLocationDetails: boolean = false;
+  selectedLocation: any = null;
+  
+  // Panel drag state
+  @ViewChild('locationDetailsPanel', { static: false }) panelElementRef!: ElementRef<HTMLElement>;
+  panelPosition = { x: 0, y: 0 };
+  isDragging = false;
+  dragOffset = { x: 0, y: 0 };
   
   // Map initialization state
   isMapReady: boolean = false;
@@ -177,6 +411,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    // Clean up drag event listeners
+    this.stopDrag();
   }
 
   private subscribeToSelections(): void {
@@ -336,6 +572,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     // For demo purposes, create sample district data
     // In production, you would load this from a GeoJSON file
     this.initDistrictData();
+    
+    // Add location markers
+    this.addLocationMarkers();
   }
 
   switchLayer(layerName: string): void {
@@ -1005,5 +1244,351 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   private updateInfoPanel(): void {
     this.cdr.detectChanges();
+  }
+
+  // Location markers data
+  private arunachalTop10Locations = [
+    {
+      name: "Tawang",
+      latitude: 27.5860,
+      longitude: 91.8650,
+      type: "mountain",
+      description: "Famous for Tawang Monastery, scenic mountains, and snow-clad peaks. Located near the Indo-China border."
+    },
+    {
+      name: "Ziro Valley",
+      latitude: 27.5565,
+      longitude: 93.8196,
+      type: "valley",
+      description: "Known for its pine hills, rice fields, and the Apatani tribal culture. Hosts the popular Ziro Music Festival."
+    },
+    {
+      name: "Bomdila",
+      latitude: 27.2648,
+      longitude: 92.4241,
+      type: "mountain",
+      description: "A hill town with apple orchards, Buddhist monasteries, and panoramic views of the Himalayas."
+    },
+    {
+      name: "Itanagar",
+      latitude: 27.0844,
+      longitude: 93.6053,
+      type: "city",
+      description: "The capital city, featuring Ita Fort, Ganga Lake, and a blend of modern and tribal culture."
+    },
+    {
+      name: "Dirang",
+      latitude: 27.3645,
+      longitude: 92.2402,
+      type: "valley",
+      description: "A serene valley between Bomdila and Tawang, famous for hot water springs and apple orchards."
+    },
+    {
+      name: "Pasighat",
+      latitude: 28.0660,
+      longitude: 95.3263,
+      type: "city",
+      description: "The oldest town in Arunachal Pradesh, located along the Siang River; gateway to the eastern Himalayas."
+    },
+    {
+      name: "Roing",
+      latitude: 28.1550,
+      longitude: 95.8350,
+      type: "valley",
+      description: "A picturesque valley town with lakes, rivers, and the Mayudia Pass offering snowfall in winter."
+    },
+    {
+      name: "Anini",
+      latitude: 28.8137,
+      longitude: 95.8850,
+      type: "mountain",
+      description: "Remote and peaceful, surrounded by lush green hills; home to the Idu Mishmi tribe."
+    },
+    {
+      name: "Along (Aalo)",
+      latitude: 28.1670,
+      longitude: 94.8030,
+      type: "valley",
+      description: "Known for hanging bridges made of bamboo over the Siang River and Adi tribal villages."
+    },
+    {
+      name: "Namdapha National Park",
+      latitude: 27.4917,
+      longitude: 96.3858,
+      type: "national_park",
+      description: "A biodiversity hotspot and India's third-largest national park, home to tigers, leopards, and red pandas."
+    }
+  ];
+
+  private getMarkerIconByType(type: string): any {
+    let backgroundColor = '#ff6b35';
+    let emoji = '📍';
+    let size = 28;
+    
+    switch(type) {
+      case 'mountain':
+        backgroundColor = '#8B4513'; // Brown
+        emoji = '🏔️';
+        break;
+      case 'valley':
+        backgroundColor = '#228B22'; // Forest Green
+        emoji = '🌄';
+        break;
+      case 'city':
+        backgroundColor = '#1E90FF'; // Dodger Blue
+        emoji = '🏙️';
+        break;
+      case 'national_park':
+        backgroundColor = '#006400'; // Dark Green
+        emoji = '🌲';
+        size = 30;
+        break;
+      default:
+        backgroundColor = '#ff6b35'; // Orange (default)
+        emoji = '📍';
+    }
+    
+    return this.L.divIcon({
+      className: 'location-marker',
+      html: `<div style="
+        background-color: ${backgroundColor};
+        width: ${size}px;
+        height: ${size}px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: ${size - 8}px;
+      ">${emoji}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2]
+    });
+  }
+
+  private addLocationMarkers(): void {
+    if (!this.map || !this.L) {
+      console.warn('Map or Leaflet not initialized. Cannot add location markers.');
+      return;
+    }
+
+    this.arunachalTop10Locations.forEach(location => {
+      // Create a custom icon based on location type
+      const locationIcon = this.getMarkerIconByType(location.type || 'default');
+
+      const marker = this.L.marker([location.latitude, location.longitude], {
+        icon: locationIcon,
+        interactive: true,
+        bubblingMouseEvents: false
+      }).addTo(this.map);
+
+      // Make marker clickable and add click event
+      marker.on('click', (e: any) => {
+        // Stop event propagation to prevent map click and other layer interactions
+        this.L.DomEvent.stop(e);
+        
+        console.log('Marker clicked:', location.name);
+        this.ngZone.run(() => {
+          this.showLocationDetailsPanel(location, marker);
+        });
+      });
+      
+      // Also add mouseover for visual feedback
+      marker.on('mouseover', () => {
+        if (marker !== this.selectedMarker) {
+          marker.setOpacity(0.8);
+        }
+      });
+      
+      marker.on('mouseout', () => {
+        if (marker !== this.selectedMarker) {
+          marker.setOpacity(1);
+        }
+      });
+
+      this.locationMarkers.push(marker);
+      this.locationMarkerMap.set(location.name, marker);
+    });
+  }
+
+  showLocationDetailsPanel(location: any, marker: any): void {
+    // Clear previous marker highlight
+    this.clearMarkerHighlight();
+    
+    // Set new selected marker and location
+    this.selectedMarker = marker;
+    this.selectedLocation = location;
+    this.showLocationDetails = true;
+    
+    // Initialize panel position to center of screen
+    this.initializePanelPosition();
+    
+    // Highlight the selected marker
+    this.highlightMarker(marker);
+    
+    console.log('Location marker clicked, showLocationDetails:', this.showLocationDetails);
+    console.log('Selected location:', this.selectedLocation);
+    
+    // Force change detection immediately
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+    
+    // Also trigger delayed change detection to ensure it's applied
+    setTimeout(() => {
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      console.log('Delayed change detection, showLocationDetails:', this.showLocationDetails);
+    }, 10);
+  }
+
+  private initializePanelPosition(): void {
+    // Center the panel on screen
+    const panelWidth = 400;
+    const panelHeight = 300; // Approximate height
+    this.panelPosition = {
+      x: (window.innerWidth - panelWidth) / 2,
+      y: (window.innerHeight - panelHeight) / 2
+    };
+  }
+
+  startDrag(event: MouseEvent | TouchEvent): void {
+    event.preventDefault();
+    this.isDragging = true;
+    
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    
+    this.dragOffset = {
+      x: clientX - this.panelPosition.x,
+      y: clientY - this.panelPosition.y
+    };
+
+    // Add event listeners for dragging
+    if (event instanceof MouseEvent) {
+      document.addEventListener('mousemove', this.onDrag);
+      document.addEventListener('mouseup', this.stopDrag);
+    } else {
+      document.addEventListener('touchmove', this.onDrag);
+      document.addEventListener('touchend', this.stopDrag);
+    }
+  }
+
+  onDrag = (event: MouseEvent | TouchEvent): void => {
+    if (!this.isDragging) return;
+    
+    event.preventDefault();
+    
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    
+    // Calculate new position (no bounds checking during drag for performance)
+    const newX = clientX - this.dragOffset.x;
+    const newY = clientY - this.dragOffset.y;
+    
+    // Update position directly via DOM using transform for GPU acceleration
+    if (this.panelElementRef?.nativeElement) {
+      this.panelElementRef.nativeElement.style.transform = `translate(${newX}px, ${newY}px)`;
+    }
+    
+    // Update the position property (but don't trigger change detection)
+    this.panelPosition = { x: newX, y: newY };
+  }
+
+  stopDrag = (): void => {
+    this.isDragging = false;
+    
+    // Apply bounds checking and finalize position
+    if (this.panelElementRef?.nativeElement) {
+      const panelWidth = 400;
+      const panelHeight = 300;
+      const maxX = window.innerWidth - panelWidth;
+      const maxY = window.innerHeight - panelHeight;
+      
+      let finalX = Math.max(0, Math.min(this.panelPosition.x, maxX));
+      let finalY = Math.max(0, Math.min(this.panelPosition.y, maxY));
+      
+      // Update with bounds-checked position
+      this.panelElementRef.nativeElement.style.transform = `translate(${finalX}px, ${finalY}px)`;
+      this.panelElementRef.nativeElement.style.left = finalX + 'px';
+      this.panelElementRef.nativeElement.style.top = finalY + 'px';
+      this.panelElementRef.nativeElement.style.transform = 'none';
+      
+      this.panelPosition = { x: finalX, y: finalY };
+    }
+    
+    document.removeEventListener('mousemove', this.onDrag);
+    document.removeEventListener('mouseup', this.stopDrag);
+    document.removeEventListener('touchmove', this.onDrag);
+    document.removeEventListener('touchend', this.stopDrag);
+  }
+
+  hideLocationDetailsPanel(): void {
+    this.showLocationDetails = false;
+    this.selectedLocation = null;
+    this.clearMarkerHighlight();
+    this.cdr.detectChanges();
+  }
+
+  private highlightMarker(marker: any): void {
+    if (!marker) return;
+    
+    // Get the icon element
+    const iconElement = marker.getElement();
+    if (iconElement) {
+      const markerDiv = iconElement.querySelector('div');
+      if (markerDiv) {
+        // Add selected class and update styles
+        markerDiv.style.transform = 'scale(1.3)';
+        markerDiv.style.boxShadow = '0 0 0 4px rgba(255, 107, 53, 0.6), 0 0 0 8px rgba(255, 107, 53, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4)';
+        markerDiv.style.zIndex = '1000';
+        markerDiv.style.transition = 'all 0.3s ease';
+        markerDiv.classList.add('selected-marker');
+      }
+    }
+    
+    // Also add pulsing animation
+    marker.setZIndexOffset(1000);
+  }
+
+  private clearMarkerHighlight(): void {
+    if (this.selectedMarker) {
+      const iconElement = this.selectedMarker.getElement();
+      if (iconElement) {
+        const markerDiv = iconElement.querySelector('div');
+        if (markerDiv) {
+          // Reset styles
+          markerDiv.style.transform = 'scale(1)';
+          markerDiv.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.3)';
+          markerDiv.style.zIndex = 'auto';
+          markerDiv.classList.remove('selected-marker');
+        }
+      }
+      this.selectedMarker.setZIndexOffset(0);
+      this.selectedMarker.setOpacity(1);
+    }
+    this.selectedMarker = null;
+  }
+
+  getTypeColor(type: string): string {
+    switch(type) {
+      case 'mountain': return '#8B4513';
+      case 'valley': return '#228B22';
+      case 'city': return '#1E90FF';
+      case 'national_park': return '#006400';
+      default: return '#ff6b35';
+    }
+  }
+
+  getTypeLabel(type: string): string {
+    switch(type) {
+      case 'mountain': return 'Mountain';
+      case 'valley': return 'Valley';
+      case 'city': return 'City';
+      case 'national_park': return 'National Park';
+      default: return 'Location';
+    }
   }
 }

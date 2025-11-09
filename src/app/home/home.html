@@ -157,8 +157,15 @@
                                     (click)="selectProject(project)" *ngFor="let project of filteredProjects">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h5 class="card-title mb-1 text-dark">{{ project.name }}</h5>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span class="type-icon-badge" 
+                                                          [style.background-color]="getTypeColor(project.type)"
+                                                          [title]="getTypeLabel(project.type)">
+                                                        {{ getTypeIcon(project.type) }}
+                                                    </span>
+                                                    <h5 class="card-title mb-0 text-dark">{{ project.name }}</h5>
+                                                </div>
                                                 <p class="text-muted mb-2">
                                                     <i class="fa-regular fa-calendar me-2"></i>{{ project.startDate }}
                                                 </p>
@@ -191,8 +198,15 @@
                     <ng-template #projectDetails>
                         <div class="card shadow-sm border-0 flex-grow-1 d-flex flex-column project-detail-card">
                             <div class="card-header bg-body d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h5 class="mb-0">{{ selectedProject?.name }}</h5>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="type-icon-badge" 
+                                              [style.background-color]="getTypeColor(selectedProject?.type)"
+                                              [title]="getTypeLabel(selectedProject?.type)">
+                                            {{ getTypeIcon(selectedProject?.type) }}
+                                        </span>
+                                        <h5 class="mb-0">{{ selectedProject?.name }}</h5>
+                                    </div>
                                     <small class="text-muted">Project detail overview</small>
                                 </div>
                                 <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">

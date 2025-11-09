@@ -20,6 +20,9 @@ type Project = {
   description: string;
   siteImages: string[];
   documents: ProjectDocument[];
+  latitude?: number;
+  longitude?: number;
+  type?: string;
 };
 
 @Component({
@@ -328,13 +331,15 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
   protected projects: Project[] = [
     {
       id: 'p-001',
-      name: 'Riverfront Redevelopment',
+      name: 'Tawang Development Project',
       startDate: 'March 12, 2024',
-      address: '123 Riverside Dr, Springfield, IL',
-      contactPhone: '+1 (555) 815-2234',
-      budget: '$8.2M',
-      description:
-        'Mixed-use redevelopment of the old industrial riverfront into a walkable commercial hub with green public spaces.',
+      address: 'Tawang, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43210',
+      budget: '₹8.2 Cr',
+      description: 'Famous for Tawang Monastery, scenic mountains, and snow-clad peaks. Located near the Indo-China border.',
+      latitude: 27.5860,
+      longitude: 91.8650,
+      type: 'mountain',
       siteImages: [
         'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
@@ -347,13 +352,15 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
     },
     {
       id: 'p-002',
-      name: 'North Ridge Solar Farm',
+      name: 'Ziro Valley Tourism Project',
       startDate: 'January 5, 2025',
-      address: '88 Solstice Way, Flagstaff, AZ',
-      contactPhone: '+1 (555) 661-9087',
-      budget: '$14.6M',
-      description:
-        'Construction of a 25MW solar farm providing clean energy to over 6,000 homes with battery storage capabilities.',
+      address: 'Ziro Valley, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43211',
+      budget: '₹14.6 Cr',
+      description: 'Known for its pine hills, rice fields, and the Apatani tribal culture. Hosts the popular Ziro Music Festival.',
+      latitude: 27.5565,
+      longitude: 93.8196,
+      type: 'valley',
       siteImages: [
         'https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1200&q=80',
@@ -361,18 +368,20 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
       ],
       documents: [
         { label: 'Site Layout.dwg', url: '#' },
-        { label: 'Power Purchase Agreement.pdf', url: '#' },
+        { label: 'Tourism Development Plan.pdf', url: '#' },
       ],
     },
     {
       id: 'p-003',
-      name: 'Central Transit Hub',
+      name: 'Bomdila Infrastructure Project',
       startDate: 'July 21, 2023',
-      address: '501 Main St, Austin, TX',
-      contactPhone: '+1 (555) 300-4411',
-      budget: '$22.4M',
-      description:
-        'Upgrade and expansion of the downtown transit interchange with integrated bus, tram, and micro-mobility services.',
+      address: 'Bomdila, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43212',
+      budget: '₹22.4 Cr',
+      description: 'A hill town with apple orchards, Buddhist monasteries, and panoramic views of the Himalayas.',
+      latitude: 27.2648,
+      longitude: 92.4241,
+      type: 'mountain',
       siteImages: [
         'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1447433865958-f402f562b843?auto=format&fit=crop&w=1200&q=80',
@@ -386,32 +395,36 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
     },
     {
       id: 'p-004',
-      name: 'Harbor Flood Mitigation',
+      name: 'Itanagar Capital Development',
       startDate: 'September 18, 2024',
-      address: '42 Seawall Ave, Charleston, SC',
-      contactPhone: '+1 (555) 982-4710',
-      budget: '$11.8M',
-      description:
-        'Installation of adaptive flood barriers and wetland restoration to protect the harbor district from storm surges.',
+      address: 'Itanagar, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43213',
+      budget: '₹11.8 Cr',
+      description: 'The capital city, featuring Ita Fort, Ganga Lake, and a blend of modern and tribal culture.',
+      latitude: 27.0844,
+      longitude: 93.6053,
+      type: 'city',
       siteImages: [
         'https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
       ],
       documents: [
-        { label: 'Hydrology Report.pdf', url: '#' },
-        { label: 'Barrier Specs.dwg', url: '#' },
+        { label: 'City Development Plan.pdf', url: '#' },
+        { label: 'Infrastructure Specs.dwg', url: '#' },
       ],
     },
     {
       id: 'p-005',
-      name: 'Innovation Campus Expansion',
+      name: 'Dirang Valley Project',
       startDate: 'May 2, 2025',
-      address: '200 Labs Way, Boulder, CO',
-      contactPhone: '+1 (555) 742-1130',
-      budget: '$36.0M',
-      description:
-        'Development of new R&D labs, collaborative workspaces, and sustainability upgrades across the tech campus.',
+      address: 'Dirang, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43214',
+      budget: '₹36.0 Cr',
+      description: 'A serene valley between Bomdila and Tawang, famous for hot water springs and apple orchards.',
+      latitude: 27.3645,
+      longitude: 92.2402,
+      type: 'valley',
       siteImages: [
         'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1543248939-ff40856f65d4?auto=format&fit=crop&w=1200&q=80',
@@ -419,27 +432,111 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
       ],
       documents: [
         { label: 'Master Plan.pdf', url: '#' },
-        { label: 'Tenant Fit-Out Guidelines.pdf', url: '#' },
-        { label: 'LEED Checklist.xlsx', url: '#' },
+        { label: 'Development Guidelines.pdf', url: '#' },
+        { label: 'Environmental Checklist.xlsx', url: '#' },
       ],
     },
     {
       id: 'p-006',
-      name: 'South Ridge Wind Extension',
+      name: 'Pasighat Heritage Project',
       startDate: 'November 30, 2023',
-      address: 'Palmer Trail, Cheyenne, WY',
-      contactPhone: '+1 (555) 663-9051',
-      budget: '$19.5M',
-      description:
-        'Expansion of the existing wind farm with 14 new turbines and upgraded transmission infrastructure.',
+      address: 'Pasighat, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43215',
+      budget: '₹19.5 Cr',
+      description: 'The oldest town in Arunachal Pradesh, located along the Siang River; gateway to the eastern Himalayas.',
+      latitude: 28.0660,
+      longitude: 95.3263,
+      type: 'city',
       siteImages: [
         'https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80',
       ],
       documents: [
-        { label: 'Turbine Layout.kmz', url: '#' },
+        { label: 'Heritage Conservation Plan.kmz', url: '#' },
         { label: 'Maintenance Plan.pdf', url: '#' },
+      ],
+    },
+    {
+      id: 'p-007',
+      name: 'Roing Valley Development',
+      startDate: 'February 15, 2024',
+      address: 'Roing, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43216',
+      budget: '₹15.3 Cr',
+      description: 'A picturesque valley town with lakes, rivers, and the Mayudia Pass offering snowfall in winter.',
+      latitude: 28.1550,
+      longitude: 95.8350,
+      type: 'valley',
+      siteImages: [
+        'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
+      ],
+      documents: [
+        { label: 'Development Plan.pdf', url: '#' },
+        { label: 'Environmental Assessment.pdf', url: '#' },
+      ],
+    },
+    {
+      id: 'p-008',
+      name: 'Anini Mountain Project',
+      startDate: 'August 10, 2024',
+      address: 'Anini, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43217',
+      budget: '₹12.7 Cr',
+      description: 'Remote and peaceful, surrounded by lush green hills; home to the Idu Mishmi tribe.',
+      latitude: 28.8137,
+      longitude: 95.8850,
+      type: 'mountain',
+      siteImages: [
+        'https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1200&q=80',
+      ],
+      documents: [
+        { label: 'Project Proposal.pdf', url: '#' },
+        { label: 'Community Engagement Plan.pdf', url: '#' },
+      ],
+    },
+    {
+      id: 'p-009',
+      name: 'Along (Aalo) Valley Initiative',
+      startDate: 'April 5, 2025',
+      address: 'Along (Aalo), Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43218',
+      budget: '₹18.9 Cr',
+      description: 'Known for hanging bridges made of bamboo over the Siang River and Adi tribal villages.',
+      latitude: 28.1670,
+      longitude: 94.8030,
+      type: 'valley',
+      siteImages: [
+        'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1447433865958-f402f562b843?auto=format&fit=crop&w=1200&q=80',
+      ],
+      documents: [
+        { label: 'Infrastructure Plan.pdf', url: '#' },
+        { label: 'Cultural Preservation Plan.pdf', url: '#' },
+      ],
+    },
+    {
+      id: 'p-010',
+      name: 'Namdapha National Park Conservation',
+      startDate: 'June 20, 2024',
+      address: 'Namdapha National Park, Arunachal Pradesh, India',
+      contactPhone: '+91 98765 43219',
+      budget: '₹25.4 Cr',
+      description: 'A biodiversity hotspot and India\'s third-largest national park, home to tigers, leopards, and red pandas.',
+      latitude: 27.4917,
+      longitude: 96.3858,
+      type: 'national_park',
+      siteImages: [
+        'https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+      ],
+      documents: [
+        { label: 'Conservation Plan.pdf', url: '#' },
+        { label: 'Wildlife Protection Guidelines.pdf', url: '#' },
+        { label: 'Research Report.pdf', url: '#' },
       ],
     },
   ];
@@ -479,5 +576,35 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
       project.contactPhone.toLowerCase().includes(keyword) ||
       project.budget.toLowerCase().includes(keyword)
     );
-}
+  }
+
+  getTypeIcon(type: string | undefined): string {
+    switch(type) {
+      case 'mountain': return '🏔️';
+      case 'valley': return '🌄';
+      case 'city': return '🏙️';
+      case 'national_park': return '🌲';
+      default: return '📍';
+    }
+  }
+
+  getTypeColor(type: string | undefined): string {
+    switch(type) {
+      case 'mountain': return '#8B4513'; // Brown
+      case 'valley': return '#228B22'; // Forest Green
+      case 'city': return '#1E90FF'; // Dodger Blue
+      case 'national_park': return '#006400'; // Dark Green
+      default: return '#ff6b35'; // Orange
+    }
+  }
+
+  getTypeLabel(type: string | undefined): string {
+    switch(type) {
+      case 'mountain': return 'Mountain';
+      case 'valley': return 'Valley';
+      case 'city': return 'City';
+      case 'national_park': return 'National Park';
+      default: return 'Location';
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy, ViewEncapsulation, NgZone } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { MapSelectionService } from '../map-selection.service';
@@ -7,11 +7,113 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-map',
   standalone: true,
-  template: `<div id="map"></div>`,
+  imports: [CommonModule],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div id="map"></div>
+    <div *ngIf="showInfoPanel" id="infoPanel" class="info-panel" style="position: fixed !important; bottom: 20px !important; right: 20px !important; width: 250px !important; background: white !important; border: 2px solid #0066cc !important; border-radius: 8px !important; padding: 15px !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important; z-index: 99999 !important;">
+      <button (click)="hideInfoPanel()" style="position: absolute; top: 8px; right: 8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">×</button>
+      <h4 style="margin: 0 0 12px 0; color: #0066cc; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 8px; padding-right: 30px;">Selected Information</h4>
+      <div style="margin: 8px 0; font-size: 13px;">
+        <strong style="color: #333; display: inline-block; width: 90px;">State:</strong> 
+        <span style="color: #666;">Arunachal Pradesh</span>
+      </div>
+      <div style="margin: 8px 0; font-size: 13px;">
+        <strong style="color: #333; display: inline-block; width: 90px;">District:</strong> 
+        <span id="selectedDistrict" style="color: #0066cc; font-weight: bold;">{{ selectedDistrict || 'None' }}</span>
+      </div>
+      <div style="margin: 8px 0; font-size: 13px;">
+        <strong style="color: #333; display: inline-block; width: 90px;">Mouza Count:</strong> 
+        <span id="mouzaCount" style="color: #28a745; font-weight: bold;">{{ mouzaCount }}</span>
+      </div>
+      <div style="margin: 8px 0; font-size: 13px;">
+        <strong style="color: #333; display: inline-block; width: 90px;">Selected Mouza:</strong> 
+        <span id="selectedMouza" style="color: #dc3545; font-weight: bold;">{{ selectedMouza || 'None' }}</span>
+      </div>
+    </div>
+  `,
   styles: [`
     #map {
       height: 83vh;
       width: 100%;
+    }
+    .info-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 250px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #0066cc;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      font-family: Arial, sans-serif;
+      backdrop-filter: blur(5px);
+    }
+    
+    .info-panel h4 {
+      margin: 0 0 12px 0;
+      color: #0066cc;
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      padding-right: 30px;
+    }
+
+    .info-item {
+      margin: 8px 0;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .info-item strong {
+      color: #333;
+      display: inline-block;
+      width: 90px;
+    }
+    
+    .info-item span {
+      color: #666;
+    }
+
+    #selectedDistrict {
+      color: #0066cc;
+      font-weight: bold;
+    }
+
+    #mouzaCount {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    #selectedMouza {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    /* Close button styles */
+    #closeInfoPanel {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    
+    #closeInfoPanel:hover {
+      background: #c82333;
     }
   `]
 })
@@ -37,19 +139,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   selectedMouza: string | null = null;
   mouzaCount: number = 0;
   showInfoPanel: boolean = false;
+  private isHighlighting: boolean = false;
+  
+  // Map initialization state
+  isMapReady: boolean = false;
 
   availableLayers = [
     { name: 'OpenStreetMap', label: 'OpenStreetMap' },
     { name: 'Satellite', label: 'Satellite' },
-    { name: 'Terrain', label: 'Terrain' },
+    // { name: 'Terrain', label: 'Terrain' },
     { name: 'Google Streets', label: 'Google Streets' },
-    { name: 'Google Satellite', label: 'Google Satellite' },
-    { name: 'Google Hybrid', label: 'Google Hybrid' },
-    { name: 'CartoDB Light', label: 'CartoDB Light' },
+    // { name: 'Google Satellite', label: 'Google Satellite' },
+    // { name: 'Google Hybrid', label: 'Google Hybrid' },
+    // { name: 'CartoDB Light', label: 'CartoDB Light' },
     { name: 'CartoDB Dark', label: 'CartoDB Dark' }
   ];
 
-  currentLayerName: string = 'OpenStreetMap';
+  currentLayerName: string = 'Satellite';
   private baseLayers: any = {};
   districtListItems: any[] = [];
   private subscriptions: Subscription[] = [];
@@ -58,7 +164,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private mapSelectionService: MapSelectionService
+    private mapSelectionService: MapSelectionService,
+    private ngZone: NgZone
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
@@ -119,7 +226,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    this.subscriptions.push(districtSub, mouzaSub);
+    // Listen to layer selection from home page
+    const layerSub = this.mapSelectionService.selectedLayer$.subscribe(layerName => {
+      if (layerName) {
+        console.log('Map component received layer change request:', layerName);
+        this.switchLayer(layerName);
+      }
+    });
+
+    this.subscriptions.push(districtSub, mouzaSub, layerSub);
   }
 
   private async initMap(): Promise<void> {
@@ -198,9 +313,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     // Add the default layer
     this.baseLayers["Satellite"].addTo(this.map);
     this.currentLayer = this.baseLayers["Satellite"];
+    this.currentLayerName = 'Satellite';
     
-    // Add layer control
-    this.L.control.layers(this.baseLayers).addTo(this.map);
+    // Note: Layer control is commented out since we're using custom buttons
+    // If you want to use Leaflet's built-in layer control, uncomment this line
+    // this.L.control.layers(this.baseLayers).addTo(this.map);
     
     // Add scale control
     this.L.control.scale().addTo(this.map);
@@ -213,20 +330,65 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.map.invalidateSize();
     }, 100);
 
+    // Mark map as ready
+    this.isMapReady = true;
+
     // For demo purposes, create sample district data
     // In production, you would load this from a GeoJSON file
     this.initDistrictData();
   }
 
   switchLayer(layerName: string): void {
-    if (this.currentLayer) {
-      this.map.removeLayer(this.currentLayer);
+    console.log(`switchLayer called in MapComponent with: ${layerName}`);
+    console.log(`isMapReady: ${this.isMapReady}, map exists: ${!!this.map}`);
+    
+    if (!this.isMapReady || !this.map) {
+      console.warn('Map is not initialized yet. Please wait...');
+      // Retry after a short delay if map is still initializing
+      setTimeout(() => {
+        if (this.isMapReady && this.map) {
+          this.switchLayer(layerName);
+        } else {
+          console.error('Map still not ready after retry');
+        }
+      }, 200);
+      return;
     }
     
-    if (this.baseLayers[layerName]) {
+    if (!this.baseLayers || Object.keys(this.baseLayers).length === 0) {
+      console.warn('Base layers not initialized yet');
+      setTimeout(() => {
+        if (this.baseLayers && Object.keys(this.baseLayers).length > 0) {
+          this.switchLayer(layerName);
+        }
+      }, 200);
+      return;
+    }
+    
+    if (!this.baseLayers[layerName]) {
+      console.warn(`Layer "${layerName}" not found. Available layers:`, Object.keys(this.baseLayers));
+      return;
+    }
+    
+    try {
+      // Remove current layer if it exists
+      if (this.currentLayer && this.map.hasLayer(this.currentLayer)) {
+        this.map.removeLayer(this.currentLayer);
+        console.log('Removed current layer');
+      }
+      
+      // Add new layer
       this.currentLayer = this.baseLayers[layerName];
       this.map.addLayer(this.currentLayer);
       this.currentLayerName = layerName;
+      
+      // Force map to redraw
+      this.map.invalidateSize();
+      
+      console.log(`Successfully switched to layer: ${layerName}`);
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error switching layer:', error);
     }
   }
 
@@ -304,8 +466,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   hideInfoPanel(): void {
+    console.log('hideInfoPanel called, current showInfoPanel:', this.showInfoPanel);
     this.showInfoPanel = false;
+    console.log('showInfoPanel set to:', this.showInfoPanel);
+    
+    // Force change detection
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
+    
+    // Also trigger in next tick to ensure it's applied
+    setTimeout(() => {
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      console.log('Panel should be hidden now, showInfoPanel:', this.showInfoPanel);
+    }, 0);
   }
 
   filteredDistricts: any[] = [];
@@ -430,7 +604,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         districtMap.set(name, layer);
         
         layer.on('click', () => {
-          this.highlightDistrict(layer, name);
+          this.ngZone.run(() => {
+            this.highlightDistrict(layer, name);
+          });
         });
       }
     }).addTo(this.map);
@@ -461,6 +637,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   highlightDistrict(layer: any, districtName: string): void {
+    // Prevent recursive calls
+    if (this.isHighlighting && this.selectedDistrict === districtName) {
+      return;
+    }
+    
+    this.isHighlighting = true;
+    
     // Reset previous active layer
     if (this.activeLayer && this.geojsonLayer) {
       this.geojsonLayer.resetStyle(this.activeLayer);
@@ -490,13 +673,44 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.activeLayer = layer;
     this.selectedDistrictFeature = layer.feature;
     this.selectedDistrict = districtName;
+    
+    // Force show info panel - do this FIRST
     this.showInfoPanel = true;
+    console.log('highlightDistrict called for:', districtName);
+    console.log('showInfoPanel set to:', this.showInfoPanel);
+    console.log('selectedDistrict:', this.selectedDistrict);
 
     // Update mouza display
     this.loadMouzasForDistrict(districtName, layer);
     
-    // Trigger change detection
-    this.cdr.detectChanges();
+    // Force change detection immediately in Angular zone
+    this.ngZone.run(() => {
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      console.log('Change detection in ngZone, showInfoPanel:', this.showInfoPanel);
+    });
+    
+    // Notify service AFTER change detection to update dropdowns
+    // This ensures panel is shown first
+    setTimeout(() => {
+      this.mapSelectionService.selectDistrict(districtName);
+      this.isHighlighting = false;
+    }, 100);
+    
+    // Also trigger delayed change detection
+    setTimeout(() => {
+      this.ngZone.run(() => {
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+        console.log('Delayed change detection, showInfoPanel:', this.showInfoPanel);
+        const panel = document.getElementById('infoPanel');
+        console.log('Panel element exists:', !!panel);
+        if (panel) {
+          console.log('Panel display style:', window.getComputedStyle(panel).display);
+          console.log('Panel visibility:', window.getComputedStyle(panel).visibility);
+        }
+      });
+    }, 200);
   }
 
   private loadMouzasForDistrict(districtName: string, districtLayer: any): void {
@@ -553,9 +767,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       onEachFeature: (feature: any, layer: any) => {
         const mouzaName = feature.properties["Mouza Name"] || feature.properties.subdistrict;
         layer.on('click', () => {
-          this.selectedMouza = mouzaName;
-          this.highlightMouza(feature, layer);
-          this.cdr.detectChanges();
+          this.ngZone.run(() => {
+            this.selectedMouza = mouzaName;
+            this.highlightMouza(feature, layer);
+            // Notify service to update dropdown
+            this.mapSelectionService.selectMouza(mouzaName);
+            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+          });
         });
         this.mouzaCount++;
       }
@@ -759,7 +978,22 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
     }).addTo(this.map);
     
+    // Ensure info panel is visible when mouza is selected
+    this.showInfoPanel = true;
+    console.log('Mouza clicked, showInfoPanel:', this.showInfoPanel);
+    
+    // Update info panel with mouza information
+    this.updateInfoPanel();
+    
+    // Force change detection
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
+    
+    setTimeout(() => {
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+      console.log('Mouza change detection triggered, showInfoPanel:', this.showInfoPanel);
+    }, 10);
   }
 
   private clearMouzaHighlight(): void {

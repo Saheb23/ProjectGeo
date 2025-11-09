@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, signal, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,18 +11,25 @@ import { MapSelectionService } from '../map-selection.service';
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home implements OnInit, OnDestroy {
+export class Home implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild(MapComponent) mapComponent!: MapComponent;
+  
   districts = signal<string[]>([]);
   mouzas = signal<string[]>([]);
   selectedDistrict: string = '';
   selectedMouza: string = '';
+  
+  // Map layer properties
+  availableLayers = signal<Array<{name: string, label: string, icon: string}>>([]);
+  currentLayerName = signal<string>('Satellite');
 
   private districtData: any;
   private mouzaData: any;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private mapSelectionService: MapSelectionService
+    private mapSelectionService: MapSelectionService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -31,8 +38,69 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    // Wait a bit for map component to initialize
+    const checkMapComponent = () => {
+      if (this.mapComponent && this.mapComponent.availableLayers && this.mapComponent.availableLayers.length > 0) {
+        // Sync available layers from map component
+        this.availableLayers.set(this.mapComponent.availableLayers.map(layer => ({
+          name: layer.name,
+          label: layer.label,
+          icon: this.getLayerIcon(layer.name)
+        })));
+        // Sync current layer
+        this.currentLayerName.set(this.mapComponent.currentLayerName);
+        this.cdr.detectChanges();
+        console.log('Map component initialized, layers synced:', this.availableLayers().length);
+      } else {
+        // Retry if map component not ready yet
+        setTimeout(checkMapComponent, 100);
+      }
+    };
+    setTimeout(checkMapComponent, 100);
+  }
+
   ngOnDestroy(): void {
     // Cleanup if needed
+  }
+
+  switchLayer(layerName: string): void {
+    console.log('switchLayer called with:', layerName);
+    
+    // Update current layer name in home component
+    this.currentLayerName.set(layerName);
+    
+    // Notify map component via service
+    this.mapSelectionService.selectLayer(layerName);
+    
+    // Also try direct method call as fallback
+    if (this.mapComponent) {
+      try {
+        this.mapComponent.switchLayer(layerName);
+      } catch (error) {
+        console.error('Error calling mapComponent.switchLayer directly:', error);
+      }
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  getLayerIcon(layerName: string): string {
+    const iconMap: { [key: string]: string } = {
+      'OpenStreetMap': 'fa-map',
+      'Satellite': 'fa-earth-asia',
+      'Terrain': 'fa-mountain',
+      'Google Streets': 'fa-road',
+      'Google Satellite': 'fa-satellite',
+      'Google Hybrid': 'fa-layer-group',
+      'CartoDB Light': 'fa-sun',
+      'CartoDB Dark': 'fa-moon'
+    };
+    return iconMap[layerName] || 'fa-map';
+  }
+
+  isLayerActive(layerName: string): boolean {
+    return this.currentLayerName() === layerName;
   }
 
   private async loadData(): Promise<void> {

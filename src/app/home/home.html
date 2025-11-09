@@ -78,6 +78,11 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3 border border-gray-200 p-1 custom-border">
+            <select class="form-select form-select-sm border-0" aria-label="Small select example">
+                <option selected>Arunachal Pradesh</option> 
+            </select>
+        </div>
         <div class="col-md-3 border border-gray-200 p-1 custom-border" style="border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;">
             <select class="form-select form-select-sm border-0" 
@@ -98,14 +103,7 @@
                 <option *ngFor="let mouza of mouzas()" [value]="mouza">{{ mouza }}</option>
             </select>
         </div>
-        <div class="col-md-3 border border-gray-200 p-1 custom-border">
-            <select class="form-select form-select-sm border-0" aria-label="Small select example">
-                <option selected>Open this select menu</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-            </select>
-        </div>
+      
         <!-- <div class="col-md-1 border border-gray-200 p-1 custom-border" style="border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;">
             <button class="btn btn-sm btn-light border-0 w-100 font-weight-bold">
@@ -124,24 +122,19 @@
             <div class="col-md-8 p-0">
                
                 <div style="position: relative;">
-                    <div class="d-flex gap-2 justify-content-center align-items-center" style="position: absolute; top: 10px; left: 0; right: 0;z-index: 99999;">
-                        <button class="btn btn-sm btn-light position-relative">
-                            <i class="fa-solid fa-earth-asia"></i> Satellite View
-                        </button>
-                        <button class="btn btn-sm btn-light position-relative">
-                            <i class="fa-solid fa-earth-asia"></i> Satellite View
-                        </button>
-                        <button class="btn btn-sm btn-light position-relative">
-                            <i class="fa-solid fa-earth-asia"></i> Satellite View
-                        </button>
-                        <button class="btn btn-sm btn-light position-relative">
-                            <i class="fa-solid fa-earth-asia"></i> Satellite View
-                        </button>
-                        <button class="btn btn-sm btn-light position-relative">
-                            <i class="fa-solid fa-earth-asia"></i> Satellite View
+                    <div class="d-flex gap-2 justify-content-center align-items-center" style="position: absolute; top: 10px; left: 0; right: 0;z-index: 99999;width: fit-content;
+    transform: translate(40%, 40%);">
+                        <button 
+                            *ngFor="let layer of availableLayers()" 
+                            class="btn btn-sm position-relative"
+                            [class.btn-primary]="isLayerActive(layer.name)"
+                            [class.btn-light]="!isLayerActive(layer.name)"
+                            (click)="switchLayer(layer.name)"
+                            [title]="layer.label">
+                            <i class="fa-solid" [ngClass]="layer.icon"></i> {{ layer.label }}
                         </button>
                     </div>
-                    <app-map></app-map>
+                    <app-map #mapComponent></app-map>
                 </div>
                 
             </div>

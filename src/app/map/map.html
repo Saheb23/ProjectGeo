@@ -1,0 +1,40 @@
+<div class="map-container">
+  <!-- <div id="sidebar">
+    <h3 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">Districts</h3>
+    <input 
+      type="text" 
+      id="searchBox" 
+      placeholder="Search district name..." 
+      #searchBox
+      (input)="filterDistricts($event)">
+    <div id="districtList" class="district-list">
+      <div 
+        *ngFor="let district of getDisplayDistricts()" 
+        class="district" 
+        [class.active]="isDistrictActive(district.name)"
+        (click)="selectDistrict(district)">
+        {{ district.name }}
+      </div>
+    </div>
+  </div> -->
+  
+  <div id="map" class="map"></div>
+  
+  <!-- Information Panel -->
+  <div id="infoPanel" class="info-panel" [class.show]="showInfoPanel">
+    <button id="closeInfoPanel" title="Close" (click)="hideInfoPanel()">×</button>
+    <h4>Selected Information</h4>
+    <div class="info-item">
+      <strong>State:</strong> <span id="selectedState">Arunachal Pradesh</span>
+    </div>
+    <div class="info-item">
+      <strong>District:</strong> <span id="selectedDistrict">{{ selectedDistrict || 'None' }}</span>
+    </div>
+    <div class="info-item">
+      <strong>Mouza Count:</strong> <span id="mouzaCount">{{ mouzaCount }}</span>
+    </div>
+    <div class="info-item">
+      <strong>Selected Mouza:</strong> <span id="selectedMouza">{{ selectedMouza || 'None' }}</span>
+    </div>
+  </div>
+</div>

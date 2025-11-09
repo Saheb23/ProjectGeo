@@ -1,0 +1,230 @@
+.map-container {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#sidebar {
+  width: 280px;
+  min-width: 250px;
+  max-width: 350px;
+  background: #f4f4f4;
+  padding: 15px;
+  border-right: 2px solid #ccc;
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.map {
+  flex: 1;
+  height: 100vh;
+  min-width: 0;
+  width: 100%;
+}
+
+#searchBox {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 2px solid #aaa;
+  font-size: 14px;
+  box-sizing: border-box;
+  
+  &:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+  }
+}
+
+.district {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+  font-size: 13px;
+  line-height: 1.4;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #e0e0e0;
+  }
+  
+  &.active {
+    background: #0066cc;
+    color: white;
+    font-weight: bold;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.district-list {
+  // max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.no-districts {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.layer-control {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  
+  h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 14px;
+  }
+}
+
+.layer-option {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  margin: 2px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #e0e0e0;
+  }
+  
+  &.active {
+    background: #0066cc;
+    color: white;
+    border-color: #004499;
+  }
+}
+
+/* Information Panel Styles */
+.info-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 250px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #0066cc;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  font-family: Arial, sans-serif;
+  backdrop-filter: blur(5px);
+  display: none; /* Hidden by default */
+  
+  &.show {
+    display: block;
+  }
+  
+  h4 {
+    margin: 0 0 12px 0;
+    color: #0066cc;
+    font-size: 16px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    padding-right: 30px;
+  }
+}
+
+.info-item {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  
+  strong {
+    color: #333;
+    display: inline-block;
+    width: 90px;
+  }
+  
+  span {
+    color: #666;
+  }
+}
+
+#selectedDistrict {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+#mouzaCount {
+  color: #28a745;
+  font-weight: bold;
+}
+
+#selectedMouza {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Close button styles */
+#closeInfoPanel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #c82333;
+  }
+}
+
+/* Pulsing animation for highlighted mouza */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulsing-marker {
+  animation: pulse 2s infinite;
+}
+
+.current-location-marker {
+  background-color: blue;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+}

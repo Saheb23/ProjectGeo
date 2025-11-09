@@ -34,7 +34,7 @@ import { Subscription } from 'rxjs';
   `,
   styles: [`
     #map {
-      height: 83vh;
+      height: 77vh;
       width: 100%;
     }
     .info-panel {

@@ -7,9 +7,13 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './map.html',
-  styleUrl: './map.scss'
+  template: `<div id="map"></div>`,
+  styles: [`
+    #map {
+      height: 83vh;
+      width: 100%;
+    }
+  `]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
 

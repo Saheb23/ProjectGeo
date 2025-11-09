@@ -1,4 +1,4 @@
-.custom-border{
+.custom-border {
     border-color: #e7e7e7 !important;
     font-size: 14px !important;
 }
@@ -77,7 +77,7 @@
 }
 
 .project-sidebar {
-    max-height:  65vh; // calc(100vh - 300px);
+    max-height: 62vh; // calc(100vh - 300px);
     overflow-y: auto;
 }
 
@@ -203,6 +203,12 @@
     }
 }
 
-.project-sidebar-hight-adjust{
-    height: 70vh!important;
+.project-sidebar-hight-adjust {
+    max-height: 77vh !important;
+}
+
+.custom-text-muted {
+    font-size: 12px;
+    color: grey !important;
+    font-weight: 600;
 }

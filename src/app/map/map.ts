@@ -7,7 +7,7 @@ import { isPlatformBrowser } from '@angular/common';
   template: `<div id="map"></div>`,
   styles: [`
     #map {
-      height: 100vh;
+      height: 83vh;
       width: 100%;
     }
   `]

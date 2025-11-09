@@ -1,6 +1,8 @@
-import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
+import { MapSelectionService } from '../map-selection.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-map',
@@ -9,7 +11,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './map.html',
   styleUrl: './map.scss'
 })
-export class MapComponent implements AfterViewInit {
+export class MapComponent implements AfterViewInit, OnDestroy {
 
   private map: any;
   private L: any;
@@ -46,16 +48,74 @@ export class MapComponent implements AfterViewInit {
   currentLayerName: string = 'OpenStreetMap';
   private baseLayers: any = {};
   districtListItems: any[] = [];
+  private subscriptions: Subscription[] = [];
+  private districtLayerMap: Map<string, any> = new Map();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private mapSelectionService: MapSelectionService
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) {
       await this.initMap();
+      this.subscribeToSelections();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  private subscribeToSelections(): void {
+    // Listen to district selection from home page
+    const districtSub = this.mapSelectionService.selectedDistrict$.subscribe(districtName => {
+      if (districtName && this.districtLayerMap.has(districtName)) {
+        const district = this.districtLayerMap.get(districtName);
+        this.highlightDistrict(district.layer, districtName);
+      }
+    });
+
+    // Listen to mouza selection from home page
+    const mouzaSub = this.mapSelectionService.selectedMouza$.subscribe(mouzaName => {
+      if (mouzaName) {
+        // Try to find and highlight the mouza
+        const highlightMouza = () => {
+          if (this.mouzaLayer) {
+            let found = false;
+            this.mouzaLayer.eachLayer((layer: any) => {
+              const feature = layer.feature;
+              const name = feature.properties["Mouza Name"] || feature.properties.subdistrict;
+              if (name === mouzaName) {
+                this.selectedMouza = mouzaName;
+                this.highlightMouza(feature, layer);
+                this.cdr.detectChanges();
+                found = true;
+                return; // Found and highlighted
+              }
+            });
+            return found;
+          }
+          return false;
+        };
+
+        // Try immediately
+        if (!highlightMouza()) {
+          // If mouza layer not ready, wait a bit and retry
+          setTimeout(() => {
+            highlightMouza();
+          }, 500);
+        }
+      } else {
+        // Clear mouza highlight when selection is cleared
+        this.clearMouzaHighlight();
+        this.selectedMouza = null;
+        this.cdr.detectChanges();
+      }
+    });
+
+    this.subscriptions.push(districtSub, mouzaSub);
   }
 
   private async initMap(): Promise<void> {
@@ -71,7 +131,7 @@ export class MapComponent implements AfterViewInit {
 
     this.map = this.L.map('map', {
       center: [28.2, 94.5], // Center of Arunachal Pradesh
-      zoom: 8,
+      zoom: 7,
       zoomControl: true,
       scrollWheelZoom: true,
       doubleClickZoom: true,
@@ -132,8 +192,8 @@ export class MapComponent implements AfterViewInit {
     };
     
     // Add the default layer
-    this.baseLayers["OpenStreetMap"].addTo(this.map);
-    this.currentLayer = this.baseLayers["OpenStreetMap"];
+    this.baseLayers["Satellite"].addTo(this.map);
+    this.currentLayer = this.baseLayers["Satellite"];
     
     // Add layer control
     this.L.control.layers(this.baseLayers).addTo(this.map);
@@ -377,6 +437,11 @@ export class MapComponent implements AfterViewInit {
       layer
     })).sort((a, b) => a.name.localeCompare(b.name));
     
+    // Store district layer map for service-based selection
+    this.districtListItems.forEach(district => {
+      this.districtLayerMap.set(district.name, district);
+    });
+    
     this.cdr.detectChanges();
   }
 
@@ -400,6 +465,8 @@ export class MapComponent implements AfterViewInit {
     // Clear previously selected mouza when district is clicked
     this.clearMouzaHighlight();
     this.selectedMouza = null;
+    // Also clear selection in service
+    this.mapSelectionService.selectMouza(null);
     
     // Highlight the selected district
     layer.setStyle({ 
